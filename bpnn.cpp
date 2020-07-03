@@ -126,12 +126,24 @@ void Network::feedforward()
     *layers[i+1].contents = (*layers[i].contents) * (*layers[i].weights);
     *layers[i+1].contents += *layers[i+1].bias;
   }
-  for (int i = 1; i < length; i++) {
+  for (int i = 1; i < length-1; i++) {
     for (int j = 0; j < layers[i].contents->rows(); j++) {
       for (int k = 0; k < layers[i].contents->cols(); k++) {
         (*layers[i].dZ)(j,k) = layers[i].activation_deriv((*layers[i].contents)(j,k));
         (*layers[i].contents)(j,k) = layers[i].activation((*layers[i].contents)(j,k));
       }
+    }
+  }
+  //  (*layers[i].dZ)(j,k) = layers[i].activation_deriv((*layers[i].contents)(j,k));
+  for (int j = 0; j < layers[layers.size()-1].contents->rows(); j++) {
+    float sum = 0;
+    for (int k = 0; k < layers[layers.size()-1].contents->cols(); k++) {
+      sum += (*layers[layers.size()-1].contents)(j,k)
+      (*layers[layers.size()-1].dZ)(j,k) = layers[layers.size()-1].activation_deriv((*layers[layers.size()-1].contents)(j,k));
+      (*layers[layers.size()-1].contents)(j,k) = layers[layers.size()-1].activation((*layers[layers.size()-1].contents)(j,k));
+    }
+    for (int k = 0; k < layers[layers.size()-1].contents->cols(); k++) {
+      (*layers[layers.size()-1].contents)(j,k) = exp((*layers[layers.size()-1].contents)(j,k))/exp(sum);
     }
   }
 }
